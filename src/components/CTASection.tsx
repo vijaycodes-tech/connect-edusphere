@@ -32,7 +32,12 @@ export const CTASection = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="lg" className="bg-white text-primary hover:bg-white/90">
+            <Button 
+              variant="hero" 
+              size="lg" 
+              className="bg-white text-primary hover:bg-white/90"
+              onClick={() => window.location.href = '/login'}
+            >
               Start Free Trial
               <ArrowRight className="w-5 h-5" />
             </Button>
