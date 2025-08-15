@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { 
   Calendar, 
   BookOpen, 
@@ -13,13 +14,29 @@ import {
   User,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Search,
+  UserCheck
 } from "lucide-react";
 
 export default function Dashboard() {
   const { role } = useParams<{ role: string }>();
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Mock user data with enhanced status
+  const getUserData = () => {
+    switch (role) {
+      case "student":
+        return { name: "Rahul Sharma", isPresent: true };
+      case "teacher":
+        return { name: "Dr. Meera Singh", isPresent: true };
+      case "admin":
+        return { name: "Mr. Rajesh Kumar", isActive: true };
+      default:
+        return null;
+    }
+  };
 
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
@@ -27,13 +44,15 @@ export default function Dashboard() {
       navigate("/login");
       return;
     }
-    setCurrentUser(role || "");
   }, [role, navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("userRole");
     navigate("/");
   };
+
+  const userData = getUserData();
+  if (!userData) return <div>Invalid role</div>;
 
   const getDashboardData = () => {
     switch (role) {
@@ -124,7 +143,19 @@ export default function Dashboard() {
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <dashboardData.icon className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">{dashboardData.title}</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{dashboardData.title}</h1>
+              <p className="text-sm text-muted-foreground">{userData.name}</p>
+            </div>
+            <Badge variant={
+              (role === 'student' && userData.isPresent) || 
+              (role === 'teacher' && userData.isPresent) || 
+              (role === 'admin' && userData.isActive) ? "default" : "destructive"
+            }>
+              {(role === 'student' && userData.isPresent) || 
+               (role === 'teacher' && userData.isPresent) || 
+               (role === 'admin' && userData.isActive) ? "🟢 Active" : "🔴 Inactive"}
+            </Badge>
           </div>
           <Button variant="outline" onClick={handleLogout}>
             <LogOut className="w-4 h-4 mr-2" />
@@ -134,6 +165,25 @@ export default function Dashboard() {
       </header>
 
       <div className="container mx-auto px-6 py-8">
+        {/* Search Filter for Teacher/Admin */}
+        {(role === 'teacher' || role === 'admin') && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="w-5 h-5" />
+                Search Students & Teachers
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Input
+                placeholder="Search by Student ID, Name, or Teacher..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-md"
+              />
+            </CardContent>
+          </Card>
+        )}
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {dashboardData.stats.map((stat, index) => (
